@@ -135,8 +135,7 @@ def main(argv=None):
                             # simple strength proportional to pts
                             hs = (pts_map.get(h, 0) / max_pts) * 2.5 + rng.normal(0,0.3)
                             as_ = (pts_map.get(a, 0) / max_pts) * 2.5 + rng.normal(0,0.3)
-                            hs += 0.3  # home advantage
-                            # generate goals with Poisson-like sampling (clipped)
+                            hs += 0.3  
                             hg = int(max(0, rng.poisson(max(0.2, hs))))
                             ag = int(max(0, rng.poisson(max(0.2, as_))))
                             rows.append({'date': pd.Timestamp('2020-01-01') + pd.Timedelta(days=i), 'homeTeam': h, 'awayTeam': a, 'homeGoals': hg, 'awayGoals': ag})
@@ -149,19 +148,16 @@ def main(argv=None):
         print('No data file provided — generating synthetic data for demo')
         df = make_synthetic(1000)
 
-    # Drop rows with missing essential values
+
     required_cols = {'homeTeam','awayTeam','homeGoals','awayGoals'}
     if not required_cols.issubset(df.columns):
         raise SystemExit(f'Missing required columns. Found: {df.columns.tolist()}')
 
-    # Prepare target
     y = prepare_target(df)
 
-    # Build feature frame
     X = df[['homeTeam','awayTeam']].copy()
     X['homeAdv'] = 1.0
 
-    # Time-aware split if date present, else random
     if 'date' in df.columns:
         df_sorted = df.sort_values('date')
         split_idx = int(len(df_sorted)*0.8)
@@ -180,14 +176,11 @@ def main(argv=None):
 
     print('Evaluating...')
     y_pred_proba = pipe.predict_proba(X_test)
-    # map classes order
     classes = pipe.classes_
-    # compute log loss
     ll = log_loss(y_test, y_pred_proba, labels=classes)
     acc = accuracy_score(y_test, pipe.predict(X_test))
     print(f'Log-loss: {ll:.4f}, Accuracy: {acc:.3f}')
 
-    # Save model
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipe, out_path)
