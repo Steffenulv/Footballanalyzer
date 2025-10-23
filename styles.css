@@ -1,0 +1,49 @@
+:root{
+  --bg: #0f172a;
+  --card: #0b1220;
+  --muted: #9aa4b2;
+  --accent: #ef4444;
+  --accent-2: #06b6d4;
+  --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,system-ui,Roboto,Arial;
+  background:linear-gradient(180deg,#071028 0%, #071827 100%);
+  color:#e6eef6;
+  -webkit-font-smoothing:antialiased;
+}
+.container{max-width:980px;margin:0 auto;padding:20px}
+.site-header{padding:28px 0;text-align:center}
+.site-header h1{margin:0;font-size:1.6rem}
+.tagline{color:var(--muted);margin-top:6px}
+
+.predictor-card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px rgba(2,6,23,0.6);display:grid;grid-template-columns:1fr;gap:14px}
+.predict-form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+.predict-form .row.small{grid-auto-flow:column}
+label{font-size:0.8rem;color:var(--muted);display:block}
+select,input[type=number],input[type=date],input[type=range]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.btn{padding:10px 14px;border-radius:8px;border:0;background:transparent;color:inherit;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#ff7a7a);color:white}
+.backend-status{margin-top:8px;color:var(--muted);font-size:0.9rem}
+
+.result{margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border:1px solid rgba(255,255,255,0.02)}
+.probs{display:flex;flex-direction:column;gap:8px}
+.prob-row{display:flex;gap:12px;align-items:center}
+.prob-row .label{width:100px;color:var(--muted)}
+.bar{flex:1;height:14px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));width:0;transition:width 600ms cubic-bezier(.2,.8,.2,1)}
+.prob{width:56px;text-align:right;font-variant-numeric:tabular-nums}
+
+details pre{white-space:pre-wrap;margin:8px 0;color:var(--muted)}
+.notes{margin-top:18px;color:var(--muted);font-size:0.95rem}
+.site-footer{padding:18px 0;text-align:center;color:var(--muted);opacity:0.9}
+
+@media (max-width:720px){
+  .predict-form .row{grid-template-columns:1fr;}
+  .prob-row .label{width:80px}
+  .container{padding:14px}
+}

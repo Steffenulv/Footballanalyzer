@@ -1,3 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Serie A — Match Predictor</title>
+    <meta name="description" content="Football match predictor for Italy's Serie A — frontend ready while backend is being prepared." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <h1>Serie A Match Predictor</h1>
+        <p class="tagline">Make quick predictions now — uses a client-side fallback until your backend is available.</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="predictor-card" aria-labelledby="predictor-heading">
+        <h2 id="predictor-heading">Predict a Match</h2>
+
+        <form id="predict-form" class="predict-form" autocomplete="off">
+          <div class="row">
+            <label for="homeTeam">Home team</label>
+            <label for="awayTeam">Away team</label>
+            <select id="homeTeam" name="homeTeam" required></select>
+            <select id="awayTeam" name="awayTeam" required></select>
+          </div>
+
+          <div class="row small">
+            <label for="matchDate">Match date</label>
+            <label for="homeAdv">Home advantage</label>
+            <input id="matchDate" name="matchDate" type="date" />
+            <input id="homeAdv" name="homeAdv" type="range" min="0" max="3" step="0.1" value="1" />
+          </div>
+
+          <div class="row">
+            <label for="homeForm">Home recent form (0-10)</label>
+            <label for="awayForm">Away recent form (0-10)</label>
+            <input id="homeForm" name="homeForm" type="number" min="0" max="10" value="6" />
+            <input id="awayForm" name="awayForm" type="number" min="0" max="10" value="5" />
+          </div>
+
+          <div class="row small">
+            <label for="homeInjuries">Home injuries</label>
+            <label for="awayInjuries">Away injuries</label>
+            <input id="homeInjuries" name="homeInjuries" type="number" min="0" max="11" value="0" />
+            <input id="awayInjuries" name="awayInjuries" type="number" min="0" max="11" value="1" />
+          </div>
+
+          <div class="form-actions">
+            <button id="predictBtn" type="submit" class="btn primary">Predict</button>
+            <button id="resetBtn" type="button" class="btn">Reset</button>
+          </div>
+
+          <div id="backend-status" class="backend-status" role="status">Backend: <span id="backend-indicator">not connected</span></div>
+        </form>
+
+        <div id="result" class="result" aria-live="polite">
+          <h3>Prediction</h3>
+          <div class="probs">
+            <div class="prob-row"><span class="label">Home win</span><div class="bar"><div id="homeBar" class="bar-fill" style="width:0%"></div></div><span id="homeProb" class="prob">—</span></div>
+            <div class="prob-row"><span class="label">Draw</span><div class="bar"><div id="drawBar" class="bar-fill" style="width:0%"></div></div><span id="drawProb" class="prob">—</span></div>
+            <div class="prob-row"><span class="label">Away win</span><div class="bar"><div id="awayBar" class="bar-fill" style="width:0%"></div></div><span id="awayProb" class="prob">—</span></div>
+          </div>
+          <details id="explanation">
+            <summary>Why this prediction?</summary>
+            <pre id="explainText">No prediction yet.</pre>
+          </details>
+        </div>
+      </section>
+
+      <aside class="notes">
+        <h4>Notes</h4>
+        <ul>
+          <li>This frontend will attempt to call <code>/api/predict</code>. If that fails it uses a local heuristic model.</li>
+          <li>Once your backend is available, it can return a JSON object with probabilities and an explanation.</li>
+        </ul>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">Made for Serie A predictions — frontend ready.</div>
+    </footer>
+
+    <script src="main.js" defer></script>
+  </body>
+</html>
 !<!DOCTYPE html>
 <html>
     <head>
