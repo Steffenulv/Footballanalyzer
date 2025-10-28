@@ -48,56 +48,47 @@ def make_synthetic(n_matches=1000, random_state=42):
 
 
 class FeatureBuilder(BaseEstimator, TransformerMixin):
-    """Build simple features from match dataframe rows.
+    """Build features from match dataframe rows using our feature engineering module.
 
-    Expects columns: homeTeam, awayTeam, homeGoals, awayGoals, (optional) date
-    Produces features: homeTeam, awayTeam, homeAdv (1), recent form placeholders.
+    Expects Serie A data columns including: squad, gf, ga, xg, xga, pts, etc.
+    Produces engineered features for form and team statistics.
     """
     def __init__(self):
         self.team_index_ = {}
+        self.scaler = StandardScaler()
 
     def fit(self, X, y=None):
-        teams = pd.unique(pd.concat([X['homeTeam'], X['awayTeam']]))
-        self.team_index_ = {t:i for i,t in enumerate(sorted(teams))}
+        from src.feature_engineering import prepare_features_for_training
+        # Prepare features and fit scaler
+        features, _ = prepare_features_for_training(X)
+        self.feature_columns_ = features.columns
+        self.scaler.fit(features)
         return self
 
     def transform(self, X):
-        # Create simple features
-        df = X.copy()
-        df = df.reset_index(drop=True)
-        # Basic features
-        out = pd.DataFrame()
-        out['homeTeam'] = df['homeTeam']
-        out['awayTeam'] = df['awayTeam']
-        out['homeAdv'] = 1.0
-        # outcome (target) must be created earlier
-        return out
+        from src.feature_engineering import prepare_features_for_training
+        # Create features using our feature engineering module
+        features, _ = prepare_features_for_training(X)
+        # Scale features
+        features_scaled = pd.DataFrame(
+            self.scaler.transform(features),
+            columns=self.feature_columns_,
+            index=features.index
+        )
+        return features_scaled
 
 
 def prepare_target(df):
-    # 3-class target from goals
-    def label(row):
-        if row['homeGoals'] > row['awayGoals']:
-            return 'home'
-        elif row['homeGoals'] < row['awayGoals']:
-            return 'away'
-        else:
-            return 'draw'
-    return df.apply(label, axis=1)
 
+    return np.where(df['pts'] == 3, 1, np.where(df['pts'] == 1, 0, -1))
 
 def build_pipeline():
-    # categorical team features encoded via OneHot (simple baseline)
-    cat_cols = ['homeTeam','awayTeam']
-    preproc = ColumnTransformer([
-        ('teams', OneHotEncoder(handle_unknown='ignore'), cat_cols),
-        ('num', StandardScaler(), ['homeAdv']),
-    ])
 
     pipe = Pipeline([
-        ('pre', preproc),
-        ('clf', LogisticRegression(multi_class='multinomial', solver='saga', max_iter=2000))
+        ('features', FeatureBuilder()),
+        ('clf', LogisticRegression(max_iter=2000))
     ])
+    return pipe
     return pipe
 
 
