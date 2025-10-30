@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <title>Serie A Vinnersjanse Kalkulator 2025/26</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial,sans-serif; background: #ededed; color: #212121; padding: 40px;}
+        .container { max-width: 400px; margin: auto; background: #fff; border-radius: 9px; box-shadow: 0 0 16px #0002; padding: 2em;}
+        h1 { color: #143872; text-align: center; margin-bottom: 1em; }
+        label { display: block; margin-top: 1em; }
+        select { width: 100%; padding: 0.5em; font-size: 1.1em; }
+        .prob { margin-top: 2em; font-size: 1.5em; text-align: center;}
+        .bar-outer {background: #d3e0eb; border-radius: 8px; width: 100%; margin: 1.5em 0;}
+        .bar-inner {background: #145ec6; color: #fff; border-radius: 8px; height: 32px; width: 0; text-align: right; font-weight: bold; line-height: 32px; transition: width 0.5s;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Serie A: Vinnersjanse</h1>
+        <form>
+            <label for="team">Velg lag:</label>
+            <select id="team"></select>
+        </form>
+        <div class="prob" id="probability"></div>
+        <div class="bar-outer"><div class="bar-inner" id="bar"></div></div>
+        <div id="explanation" style="font-size:1em; color:#445;"></div>
+    </div>
+    <script>
+        // Forsøk å laste JSON som notebook skrev: sjanse_vinner_2025.json
+        // JSON-format: [{ "squad": "...", "sjanse_vinner_pct": 12.345 }, ...]
+        let chances = {}; // mapping squad -> probability (0..1)
+
+        function populateSelect(teams) {
+            const sel = document.getElementById('team');
+            sel.innerHTML = '';
+            teams.forEach(team => {
+                const opt = document.createElement('option');
+                opt.value = team;
+                opt.textContent = team;
+                sel.appendChild(opt);
+            });
+            sel.addEventListener('change', render);
+        }
+
+        function render() {
+            const sel = document.getElementById('team');
+            const lag = sel.value;
+            const prob = (chances[lag] || 0) * 100;
+            document.getElementById('probability').innerText =
+                `Sjanse for seriegull: ${prob.toFixed(1)} %`;
+            document.getElementById('bar').style.width = Math.min(prob, 100) + '%';
+            document.getElementById('bar').textContent = prob >= 9 ? prob.toFixed(1) + '%' : '';
+            document.getElementById('explanation').innerText =
+                `Verdiene er hentet fra modellens "sjanse_vinner (%)" for 2025 (eksportert fra notebook).`;
+        }
+
+        function useFallback() {
+            // Hvis JSON ikke finnes, vis en enkel feilmelding og legg inn noen tomme valg
+            const teams = ['Napoli','Inter','Juventus','AC Milan','Roma','Atalanta'];
+            teams.forEach(t => chances[t] = 0);
+            populateSelect(teams);
+            document.getElementById('explanation').innerText = 'Kunne ikke laste sjanse_vinner_2025.json — bruker fallback.';
+            render();
+        }
+
+        fetch('sjanse_vinner_2025.json', {cache: "no-store"})
+            .then(resp => {
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                return resp.json();
+            })
+            .then(data => {
+                // data er en liste av objekter { squad, sjanse_vinner_pct }
+                data.forEach(item => {
+                    // del på 100 for å få 0..1
+                    chances[item.squad] = Number(item.sjanse_vinner_pct) / 100;
+                });
+                const teams = Object.keys(chances).sort((a,b) => chances[b] - chances[a]);
+                populateSelect(teams);
+                // velg første og vis
+                document.getElementById('team').value = teams[0];
+                render();
+            })
+            .catch(err => {
+                console.warn('Feil ved lasting av sjanse_vinner_2025.json:', err);
+                useFallback();
+            });
+    </script>
+</body>
+</html>
